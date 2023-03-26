@@ -12,6 +12,7 @@ from sockit.data import *
 
 ### Internal data and functions ###
 
+
 def _aggregate(old, new):
     """
     Aggregate two dictionaries of SOC/value items.
@@ -31,7 +32,7 @@ def _aggregate(old, new):
 re_tokenize = re.compile(r"[^a-zA-Z\d\s\,\&/]")
 re_alpha = re.compile(r"[^A-Za-z]")
 stopwords = frozenset(["pt", "nd", "st", "sr", "jr", "i", "ii", "iii"])
-levels = frozenset(['senior', 'associate', 'assistant', 'principal', 'lead'])
+levels = frozenset(["senior", "associate", "assistant", "principal", "lead"])
 
 
 def top_soc(title: str) -> str:
@@ -42,7 +43,7 @@ def top_soc(title: str) -> str:
     res: list = sort(search(clean(title)))
     if not res:
         return None
-    return res[0]['soc']
+    return res[0]["soc"]
 
 
 def clean(title):
@@ -60,7 +61,7 @@ def clean(title):
     paren_pos = title.find("(")
     # Then, check if in parentheses is just one "word"
     if paren_pos != -1:
-        parenthetical = re_tokenize.split(title[paren_pos+1:])[0]
+        parenthetical = re_tokenize.split(title[paren_pos + 1 :])[0]
         # If so, load acronyms
         if len(parenthetical.split()) == 1:
             acronyms = get_lookup("acronyms")
@@ -73,19 +74,19 @@ def clean(title):
     # Split on anything that's not a letter, comma or &
     # Grab the first token
     tokens = re_tokenize.split(title)
-            
+
     # If there's only one word before the split, grab one more token
     if len(tokens[0].split()) == 1:
         title = " ".join(tokens[:2])
     else:
         title = tokens[0]
-            
+
     # Get rid of any non alpha characters
     title = re_alpha.sub(" ", title).lower()
-            
+
     # Remove common misleading words like 'pt'
     title = " ".join([word for word in title.split() if word not in stopwords])
-            
+
     # Reorder prepositional phrases
     suffix, _, prefix = title.partition(" of ")
     title = f"{prefix} {suffix}".strip()
@@ -98,7 +99,9 @@ def clean(title):
     # Get rid of levels
     if len(title_list) > 1:
         if any(item in title_list[:-1] for item in levels):
-            title_list = [word for word in title.split()[:-1] if word not in levels] + [title.split()[-1]]
+            title_list = [word for word in title.split()[:-1] if word not in levels] + [
+                title.split()[-1]
+            ]
 
     # Check for "noun, adjective"-formatted titles
     nouns = get_set("job_title_nouns")

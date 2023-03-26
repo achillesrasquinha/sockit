@@ -12,22 +12,22 @@ from sockit.log import Log
 
 def run_compare(args):
     items = (
-        [{"source": job,    "type": "job"   } for job    in args.job   ] +
-        [{"source": resume, "type": "resume"} for resume in args.resume] +
-        [{"source": soc,    "type": "soc"   } for soc    in args.soc   ]
+        [{"source": job, "type": "job"} for job in args.job]
+        + [{"source": resume, "type": "resume"} for resume in args.resume]
+        + [{"source": soc, "type": "soc"} for soc in args.soc]
     )
     with open(args.output, "w") if args.output != "-" else sys.stdout as fout:
         for item1, item2 in combinations(items, 2):
             json.dump(
                 sockit.compare.compare(
-                    item1["source"], 
+                    item1["source"],
                     item1["type"],
                     item2["source"],
                     item2["type"],
-                    args.similarity
+                    args.similarity,
                 ),
                 fout,
-                indent=2
+                indent=2,
             )
             fout.write("\n")
 
@@ -38,7 +38,9 @@ def run_parse(args):
             if args.type == "resume":
                 result = sockit.parse.parse_resume(filepath)
             elif args.type == "job":
-                result = sockit.parse.parse_job_posting(filepath, prediction=args.prediction)
+                result = sockit.parse.parse_job_posting(
+                    filepath, prediction=args.prediction
+                )
             else:
                 Log(__name__, "run_parse").error(f"unknown type '{args.type}'")
                 return
@@ -70,9 +72,10 @@ def run_title(args):
                 if args.title in record:
                     title = record[args.title]
                 else:
-                    log.error(f"record {n} is missing title field '{args.title}'")
+                    log.error(
+                        f"record {n} is missing title field '{args.title}'")
                     sys.exit(-1)
-                
+
                 # Search
                 clean_title = sockit.title.clean(title)
                 counts = sockit.title.search(clean_title)
@@ -94,7 +97,6 @@ def run_title(args):
 
 
 def main():
-
     parser = argparse.ArgumentParser(description=sockit.__doc__)
     subparsers = parser.add_subparsers()
 
@@ -118,35 +120,26 @@ def main():
         help="show all logging messages, including debugging output",
     )
 
-
     ### Compare Module ###
-
     compare = subparsers.add_parser("compare")
     compare.set_defaults(run=run_compare)
 
-    compare.add_argument(
-        "--resume",
-        help="resumes",
-        default=[],
-        nargs="*"
-    )
+    compare.add_argument("--resume", help="resumes", default=[], nargs="*")
     compare.add_argument(
         "--job",
         help="job descriptions",
         default=[],
-        nargs="*"
-    )
+        nargs="*")
     compare.add_argument(
         "--soc",
         help="six digit SOC codes",
         default=[],
-        nargs="*"
-    )
+        nargs="*")
 
     compare.add_argument(
         "--similarity",
         default="cosine",
-        help="similarity metric [default: 'cosine', 'euclidean', 'manhattan', 'kl']"
+        help="similarity metric [default: 'cosine', 'euclidean', 'manhattan', 'kl']",
     )
     # Optional arguments
     compare.add_argument(
@@ -156,7 +149,6 @@ def main():
         help="output file (default: stdout) containing a JSON record per line",
     )
 
-
     ### Parse Module ###
 
     parse = subparsers.add_parser("parse")
@@ -164,15 +156,10 @@ def main():
 
     # Required arguments
     parse.add_argument(
-        "-i",
-        "--input",
-        help="input HTML, PDF, DOCX, or TXT files to parse",
-        nargs="+"
+        "-i", "--input", help="input HTML, PDF, DOCX, or TXT files to parse", nargs="+"
     )
     parse.add_argument(
-        "-t",
-        "--type",
-        help="type of description to parse ['resume', 'job']"
+        "-t", "--type", help="type of description to parse ['resume', 'job']"
     )
 
     # Optional arguments
@@ -186,9 +173,8 @@ def main():
         "-p",
         "--prediction",
         action="store_true",
-        help="predict occupations from the description [False] (requires the lightgbm package)"
+        help="predict occupations from the description [False] (requires the lightgbm package)",
     )
-
 
     ### Title Module ###
 
@@ -199,7 +185,7 @@ def main():
     title.add_argument(
         "-i",
         "--input",
-        help="input CSV or JSON file containing the record ID and title fields"
+        help="input CSV or JSON file containing the record ID and title fields",
     )
 
     # Optional arguments
@@ -219,7 +205,6 @@ def main():
         default="title",
         help="field name corresponding to the title [default: 'title']",
     )
-
 
     # Parse arguments and run module
 

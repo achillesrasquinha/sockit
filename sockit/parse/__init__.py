@@ -35,10 +35,13 @@ def _find_years(text):
     """
     Find all years that fall within the range [MIN_YEAR, MAX_YEAR].
     """
-    return sorted(set(
-        y for y in map(int, re_year.findall(text))
-        if MIN_YEAR <= y and y <= MAX_YEAR
-    ))
+    return sorted(
+        set(
+            y
+            for y in map(int, re_year.findall(text))
+            if MIN_YEAR <= y and y <= MAX_YEAR
+        )
+    )
 
 
 def _find_year_months(text):
@@ -76,9 +79,9 @@ def _pdf_bytes(filename):
     """
     reader = PdfReader(filename)
     num_pages = len(reader.pages)
-    return bytes(" ".join([
-        reader.pages[x].extract_text() for x in range(num_pages)
-    ]), "utf8")
+    return bytes(
+        " ".join([reader.pages[x].extract_text() for x in range(num_pages)]), "utf8"
+    )
 
 
 def _html_bytes(filename):
@@ -110,7 +113,9 @@ def _extract(filename, extension=None):
         text = _html_bytes(filename)
     else:
         if extension != "txt":
-            Log(__name__, "_extract").warn(f"treating unknown file extension '{extension}' as text file")
+            Log(__name__, "_extract").warn(
+                f"treating unknown file extension '{extension}' as text file"
+            )
         with open(filename, "rb") as f:
             text = f.read()
     return _decode_ascii(text).splitlines()
@@ -156,9 +161,7 @@ def _parse_contact(lines):
     zipcodes = []
     for line in lines:
         zipcodes += re_zipcode.findall(line)
-    return {
-        "Zipcode": zipcodes
-    }
+    return {"Zipcode": zipcodes}
 
 
 def _parse_education(lines):
@@ -171,19 +174,21 @@ def _parse_education(lines):
 
     matches = []
     for line in lines:
-        matches.append({
-            "degrees": degrees_trie.search(line),
-            "years": _find_years(line),
-            "schools":  schools_trie.search(re_alpha.sub("", line)),
-            "fields_of_study" :  fields_trie.search(line)
-        })
+        matches.append(
+            {
+                "degrees": degrees_trie.search(line),
+                "years": _find_years(line),
+                "schools": schools_trie.search(re_alpha.sub("", line)),
+                "fields_of_study": fields_trie.search(line),
+            }
+        )
     # Guess at whether degrees precede years/school, in which case the
     # search for degrees should go in reverse
     if matches and matches[0]["degrees"]:
         matches = matches[::-1]
     # Coalesce sets of degree/year/school, assuming reverse chronological order
     results = []
-    template = {"degree": None, "school": None, "years": [], "fields_of_study" : []}
+    template = {"degree": None, "school": None, "years": [], "fields_of_study": []}
     result = template.copy()
     for match in matches:
         if match["degrees"]:
@@ -197,9 +202,7 @@ def _parse_education(lines):
         if result["degree"]:
             results.insert(0, result)
             result = template.copy()
-    return {
-        "Education": results
-    }
+    return {"Education": results}
 
 
 def _parse_experience(lines):
@@ -213,7 +216,7 @@ def _parse_experience(lines):
         match = {
             "socs": title_trie.search(line, return_nodes=True),
             "years": _find_years(line),
-            "dates": _find_year_months(line)
+            "dates": _find_year_months(line),
         }
         if ("present" in line or "current" in line) and ("presented" not in line):
             match["current"] = True
@@ -224,7 +227,14 @@ def _parse_experience(lines):
         matches = matches[::-1]
     # Coalesce sets of SOCs/titles/years/dates
     results = []
-    template = {"socs": [], "raw_titles": [], "titles": [], "years": [], "dates": [], "current": False}
+    template = {
+        "socs": [],
+        "raw_titles": [],
+        "titles": [],
+        "years": [],
+        "dates": [],
+        "current": False,
+    }
     result = template.copy()
     for match in matches:
         if match["socs"]:
@@ -240,9 +250,7 @@ def _parse_experience(lines):
         if result["socs"] and result["years"]:
             results.insert(0, result)
             result = template.copy()
-    return {
-        "Experience": results
-    }
+    return {"Experience": results}
 
 
 def _parse_skills(experience_lines, skill_lines):
@@ -275,12 +283,11 @@ def parse_resume(filename, extension=None):
         results.update(_parse_experience(segments["experience"]))
 
     if "experience" in segments or "skills" in segments:
-        results.update(_parse_skills(
-            segments.get("experience", []),
-            segments.get("skills", [])
-        ))
+        results.update(
+            _parse_skills(segments.get("experience", []), segments.get("skills", []))
+        )
 
-    results['SkillVector'] = SkillVector(skill_list=results.get("Skills", []))
+    results["SkillVector"] = SkillVector(skill_list=results.get("Skills", []))
 
     # Find closest SOC
     results["Occupations"] = results["SkillVector"].rank_socs(n=10)
@@ -295,10 +302,7 @@ def parse_job_posting(filename, extension=None, prediction=False):
     nonskills_trie = get_trie("nonskills")
     skills_trie = get_trie("skills")
 
-    results = {
-        "NonSkills": [],
-        "Skills": {}
-    }
+    results = {"NonSkills": [], "Skills": {}}
 
     lines = _extract(filename, extension)
     if len(lines) == 1:

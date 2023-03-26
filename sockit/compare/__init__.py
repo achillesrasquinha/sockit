@@ -18,7 +18,7 @@ def _kl(p, q):
 
 
 def compare(source1, type1, source2, type2, similarity="cosine"):
-    """ 
+    """
     Calculate a similarity score between two sources of type "job", "resume", or "soc".
     """
     error = Log(__name__, "compare").error
@@ -33,11 +33,8 @@ def compare(source1, type1, source2, type2, similarity="cosine"):
         v1 = parsed1["SkillVector"].to_tfidf_array()
         del parsed1["SkillVector"]
     elif type1 == "soc":
-        parsed1 = {
-            "soc": source1,
-            "soc_title": get_soc_title(source1)
-        }
-        v1 = get_soc_skill_matrix()[get_soc_id(source1),:]
+        parsed1 = {"soc": source1, "soc_title": get_soc_title(source1)}
+        v1 = get_soc_skill_matrix()[get_soc_id(source1), :]
     else:
         error(f"unknown type1 value '{type1}'")
         return {}
@@ -52,11 +49,8 @@ def compare(source1, type1, source2, type2, similarity="cosine"):
         v2 = parsed2["SkillVector"].to_tfidf_array()
         del parsed2["SkillVector"]
     elif type2 == "soc":
-        parsed2 = {
-            "soc": source2,
-            "soc_title": get_soc_title(source2)
-        }
-        v2 = get_soc_skill_matrix()[get_soc_id(source2),:]
+        parsed2 = {"soc": source2, "soc_title": get_soc_title(source2)}
+        v2 = get_soc_skill_matrix()[get_soc_id(source2), :]
     else:
         error(f"unknown type2 value '{type2}'")
         return {}
@@ -75,9 +69,9 @@ def compare(source1, type1, source2, type2, similarity="cosine"):
         return {}
 
     return {
-        "comparison_type"   : f"{type1}-{type2}",
-        "similarity_method" : similarity,
-        "similarity_score"  : 1 - d,
-        "source1"           : parsed1,
-        "source2"           : parsed2
+        "comparison_type": f"{type1}-{type2}",
+        "similarity_method": similarity,
+        "similarity_score": 1 - d,
+        "source1": parsed1,
+        "source2": parsed2,
     }

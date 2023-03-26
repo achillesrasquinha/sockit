@@ -1,5 +1,5 @@
 import csv
-import json 
+import json
 import numpy as np
 from importlib import resources
 from sockit.log import Log
@@ -14,11 +14,7 @@ def get_index(name):
     Lazy-load an index from package data.
     """
     global DATA
-    names = frozenset((
-        "skill",
-        "soc",
-        "soc4"
-    ))
+    names = frozenset(("skill", "soc", "soc4"))
     if name not in names:
         Log(__name__, "get_index").error(f"unknown index '{name}'")
         return None
@@ -38,13 +34,9 @@ def get_lookup(name):
     Lazy-load a lookup table from package data.
     """
     global DATA
-    names = frozenset((
-        "abbreviations",
-        "acronyms",
-        "resume_headers",
-        "soc_titles",
-        "soc4_titles"
-    ))
+    names = frozenset(
+        ("abbreviations", "acronyms", "resume_headers", "soc_titles", "soc4_titles")
+    )
     if name not in names:
         Log(__name__, "get_lookup").error(f"unknown lookup '{name}'")
         return None
@@ -61,15 +53,13 @@ def get_set(name):
     Lazy-load a set from package data.
     """
     global DATA
-    names = frozenset((
-        "job_title_nouns"
-    ))
+    names = frozenset(("job_title_nouns"))
     key = f"sockit.data.set_{name}"
     if key not in DATA:
         Log(__name__, "get_set").debug(f"loading set '{name}'")
         with resources.path("sockit.data", f"set_{name}.txt") as f:
             DATA[key] = frozenset(item.strip() for item in open(f).readlines())
-    return DATA[key]   
+    return DATA[key]
 
 
 def get_skill(j):
@@ -136,6 +126,7 @@ def get_soc4_model():
     if key not in DATA:
         Log(__name__, "get_soc4_model").debug("loading 4-digit SOC prediction model")
         import lightgbm as lgb
+
         with resources.path("sockit.data", "model_soc4.txt") as f:
             DATA[key] = lgb.Booster(model_str=open(f).read())
     return DATA[key]
@@ -173,16 +164,18 @@ def get_trie(name):
     Lazy-load a trie (prefix tree) from package data.
     """
     global DATA
-    names = frozenset((
-        "alternative_titles",
-        "degrees",
-        "fields_of_study",
-        "job_titles",
-        "job_titles_override",
-        "nonskills",
-        "schools",
-        "skills"
-    ))
+    names = frozenset(
+        (
+            "alternative_titles",
+            "degrees",
+            "fields_of_study",
+            "job_titles",
+            "job_titles_override",
+            "nonskills",
+            "schools",
+            "skills",
+        )
+    )
     if name not in names:
         Log(__name__, "get_trie").error(f"unknown trie '{name}'")
         return None
